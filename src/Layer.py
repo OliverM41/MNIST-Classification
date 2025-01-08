@@ -1,10 +1,24 @@
 import numpy as np
+import copy
 
 class Layer:
-    def __init__(self, input_size, output_size, activation_type, name):
+    def __init__(self, input_size, output_size, activation_type, name, layer_copy=None):
         #name must be specified
-        if not name:
+        if not name and not layer_copy:
             raise ValueError("Name must be specified")
+
+        # #in the case that the argument is a layer copy, initialize parameters and activation to layer copy
+        # if layer_copy:
+        #     if name:
+        #         self.name = name
+        #     else:
+        #         self.name = copy.deepcopy(layer_copy.name)
+
+        #     self.weights = copy.deepcopy(layer_copy.weights)
+        #     self.biases = copy.deepcopy(layer_copy.biases)
+        #     self.activation_type = layer_copy.activation_type
+        #     return
+
         self.name = name
 
         #each column of both represents the w and b of a neuron in the network

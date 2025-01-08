@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import copy
 from Layer import Layer
 
 def main():
@@ -13,13 +14,13 @@ def main():
     neural_network = [
         Layer(name="1", input_size=28*28, output_size=25, activation_type="relu"),
         Layer(name="2", input_size=25, output_size=20, activation_type="relu"),
-        Layer(name="4", input_size=20, output_size=10, activation_type="softmax")
-    ]
+        Layer(name="3", input_size=20, output_size=10, activation_type="softmax")
+    ]   
+
+    # cross_validation_test(neural_network, X_train, y_train, folds=5, epochs=100) # 5 folds = 20% per fold
 
     # train network
     train(neural_network, X_train, y_train, epochs=100, batch_size=1024, alpha=0.1, show_progress=True, show_plots=True)
-
-    # cross_validation_test(neural_network, X_train, y_train, folds=5, epochs=75) # 5 folds = 20% per fold
 
     # #test network
     X_test, y_test = load_data("test")
@@ -239,8 +240,14 @@ def cross_validation_test(neural_network, X, y, folds=5, epochs=50, batch_size=1
     print("")
     print("Cross validation testing...")
 
+    # Save a copy of the original model parameters
+    original_network = copy.deepcopy(neural_network)
+
     #pick fold subsets, train on non-fold training set, test accuracy on fold set
     for i in range(folds):
+        #create a new deep copy of the original to train
+        cv_network = copy.deepcopy(original_network)
+
         print(f"Training fold {i + 1}...")
         start = i * fold_size
         end = start + fold_size
@@ -251,10 +258,10 @@ def cross_validation_test(neural_network, X, y, folds=5, epochs=50, batch_size=1
         X_train = np.concatenate((X[:start], X[end:]), axis=0)
         y_train = np.concatenate((y[:start], y[end:]), axis=0)
 
-        train(neural_network, X_train, y_train, epochs=epochs, batch_size=batch_size, alpha=alpha)
+        train(cv_network, X_train, y_train, epochs=epochs, batch_size=batch_size, alpha=alpha)
 
         print(f"Testing fold {i + 1}...")
-        accuracy, _, _ = compute_accuracy_and_cost(neural_network, X_val, y_val)
+        accuracy, _, _ = compute_accuracy_and_cost(cv_network, X_val, y_val)
         accuracies.append(accuracy)
 
     #return avg accuracy for the model architecture
